@@ -1,0 +1,59 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+@*<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>*@
+
+<div id="Captcha" class="bg-primary p-3" style="
+        max-width:540px; align-content:center; text-align:center;
+        border-radius:15px; margin:auto; position:absolute; 
+        top:50%; left:50%; transform: translate(-50%, -50%);
+">
+
+    <h1 class="text-white" style="text-transform:uppercase;">Are you a robot?</h1>
+    <img id="captchaImg" style="margin:0 auto; width:100%"/>
+    <input id="captchaGuess" type="text" class="mt-3 mb-3 w-100" style="text-align:center; font-size:25px;" placeholder="Type captcha text here"/><br />
+    <button id="greenButton" class="btn btn-success" onclick="ButtonClick(this);">I'm definitely <b>NOT</b> a robot</button>
+    <button id="redButton" class="btn btn-danger" onclick="ButtonClick(this);">I'm definitely a robot</button> <br />
+    <button class="btn btn-secondary mt-1" onclick="loadCaptcha();"> I <b>CANT SEE</b> the captcha</button>
+
+    <script>
+        var captchaId = "";
+
+        function loadCaptcha(){
+
+            fetch("https://localhost:7150/api/captcha")
+                .then(response => response.json())
+                .then(data => { 
+                    $("#captchaImg").attr("src", data.imageLink);
+                    captchaId = data.id;
+                    $("#captchaGuess").val("");
+            });
+        }
+
+        loadCaptcha();
+
+        function ButtonClick(element){
+            var captchaGuess = $("#captchaGuess");
+
+            if((element.id == "redButton") || (captchaGuess.val().length <= 0)){
+                captchaGuess.val("robot");
+            }
+
+        fetch(`https://localhost:7150/api/captcha?id=${captchaId}&guess=${captchaGuess.val()}`, {method: 'POST'})
+        .then(response => response.json())
+        .then(data => { $("#Captcha").html(`<h1 class="text-white" style="text-transform:uppercase;">${data.result}</h1>`) });
+
+        }
+
+        document.getElementById("captchaGuess").addEventListener("keyup", function(event) {
+            if(event.keyCode === 13 ){
+                event.preventDefault();
+                $("#greenButton").click();
+            }
+        });
+    </script>
+</div>
